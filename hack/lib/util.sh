@@ -454,7 +454,7 @@ function kube::util::create_client_certkey {
     local SEP=""
     shift 5
     while [ -n "${1:-}" ]; do
-        groups+="${SEP}{\"O\":\"$1\"}"
+        groups+="${SEP}{\"OU\":\"$1\"}"
         SEP=","
         shift 1
     done

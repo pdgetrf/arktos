@@ -131,6 +131,9 @@ type user audit.UserInfo
 // GetName returns the user name
 func (u user) GetName() string { return u.Username }
 
+// GetName returns the user name
+func (u user) GetTenant() string { return u.Tenant}
+
 // GetUID returns the user uid
 func (u user) GetUID() string { return u.UID }
 

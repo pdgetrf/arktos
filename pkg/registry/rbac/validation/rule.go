@@ -212,6 +212,7 @@ func (r *DefaultRuleResolver) VisitRulesFor(user user.Info, namespace string, vi
 		} else {
 			sourceDescriber := &roleBindingDescriber{}
 			for _, roleBinding := range roleBindings {
+				klog.Infof("====== %+v: %+v", user, roleBinding.Subjects)
 				subjectIndex, applies := appliesTo(user, roleBinding.Subjects, namespace)
 				if !applies {
 					continue

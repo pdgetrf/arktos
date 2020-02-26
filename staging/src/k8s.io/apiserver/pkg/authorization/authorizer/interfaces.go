@@ -99,6 +99,11 @@ type AttributesRecord struct {
 	Name            string
 	ResourceRequest bool
 	Path            string
+	Tenant		string
+}
+
+func (a AttributesRecord) GetTenant() string {
+	return a.Tenant
 }
 
 func (a AttributesRecord) GetUser() user.Info {

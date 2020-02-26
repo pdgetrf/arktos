@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"net/http"
 	"time"
+	"k8s.io/klog"
 
 	"github.com/prometheus/client_golang/prometheus"
 
@@ -116,6 +117,7 @@ func (a *Authenticator) AuthenticateRequest(req *http.Request) (*authenticator.R
 		}
 
 		if ok {
+			klog.Infof("====== %+v", user.User)
 			return user, ok, err
 		}
 	}
@@ -186,10 +188,23 @@ var CommonNameUserConversion = UserConversionFunc(func(chain []*x509.Certificate
 	if len(chain[0].Subject.CommonName) == 0 {
 		return nil, false, nil
 	}
+
+	klog.Infof("=====xxxx %+v", chain[0].Subject.OrganizationalUnit)
+
+	if (len(chain[0].Subject.Organization)>0) {
+		return &authenticator.Response{
+			User: &user.DefaultInfo{
+				Name:   chain[0].Subject.CommonName,
+				Groups: chain[0].Subject.OrganizationalUnit,
+				Tenant: chain[0].Subject.Organization[0],
+			},
+		}, true, nil
+	}
+
 	return &authenticator.Response{
 		User: &user.DefaultInfo{
 			Name:   chain[0].Subject.CommonName,
-			Groups: chain[0].Subject.Organization,
+			Groups: chain[0].Subject.OrganizationalUnit,
 		},
 	}, true, nil
 })
