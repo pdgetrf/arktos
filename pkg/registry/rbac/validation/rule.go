@@ -176,13 +176,18 @@ func (d *roleBindingDescriber) String() string {
 }
 
 func (r *DefaultRuleResolver) VisitRulesFor(user user.Info, namespace string, visitor func(source fmt.Stringer, rule *rbacv1.PolicyRule, err error) bool) {
+
+	userTenant := user.GetTenant()
+	klog.Infof("===== rule: %+v", user)
+
 	if clusterRoleBindings, err := r.clusterRoleBindingLister.ListClusterRoleBindings(); err != nil {
 		if !visitor(nil, nil, err) {
 			return
 		}
-	} else {
+	} else if userTenant == "" {
 		sourceDescriber := &clusterRoleBindingDescriber{}
 		for _, clusterRoleBinding := range clusterRoleBindings {
+
 			subjectIndex, applies := appliesTo(user, clusterRoleBinding.Subjects, "")
 			if !applies {
 				continue
@@ -212,7 +217,12 @@ func (r *DefaultRuleResolver) VisitRulesFor(user user.Info, namespace string, vi
 		} else {
 			sourceDescriber := &roleBindingDescriber{}
 			for _, roleBinding := range roleBindings {
-				klog.Infof("====== %+v: %+v", user, roleBinding.Subjects)
+
+				// verify user tenant matches rolebinding tenant
+				if (userTenant != roleBinding.GetTenant()) {
+					continue
+				}
+
 				subjectIndex, applies := appliesTo(user, roleBinding.Subjects, namespace)
 				if !applies {
 					continue
