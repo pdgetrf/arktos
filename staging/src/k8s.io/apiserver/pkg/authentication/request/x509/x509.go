@@ -117,7 +117,7 @@ func (a *Authenticator) AuthenticateRequest(req *http.Request) (*authenticator.R
 		}
 
 		if ok {
-			klog.Infof("====== %+v", user.User)
+			klog.Infof("======120 %+v", user.User)
 			return user, ok, err
 		}
 	}
@@ -160,7 +160,9 @@ func (a *Verifier) AuthenticateRequest(req *http.Request) (*authenticator.Respon
 	if err := a.verifySubject(req.TLS.PeerCertificates[0].Subject); err != nil {
 		return nil, false, err
 	}
-	return a.auth.AuthenticateRequest(req)
+
+	resp, yes, err := a.auth.AuthenticateRequest(req)
+	return resp, yes, err
 }
 
 func (a *Verifier) verifySubject(subject pkix.Name) error {
@@ -188,8 +190,6 @@ var CommonNameUserConversion = UserConversionFunc(func(chain []*x509.Certificate
 	if len(chain[0].Subject.CommonName) == 0 {
 		return nil, false, nil
 	}
-
-	klog.Infof("=====xxxx %+v", chain[0].Subject.OrganizationalUnit)
 
 	if (len(chain[0].Subject.Organization)>0) {
 		return &authenticator.Response{

@@ -80,9 +80,9 @@ func WithAuthorization(handler http.Handler, a authorizer.Authorizer, s runtime.
 func GetAuthorizerAttributes(ctx context.Context) (authorizer.Attributes, error) {
 	attribs := authorizer.AttributesRecord{}
 
-	klog.Infof("======x %+v", ctx)
 	user, ok := request.UserFrom(ctx)
 	if ok {
+		klog.Infof("===== xyz %+v", user.GetTenant());
 		attribs.User = user
 	}
 
