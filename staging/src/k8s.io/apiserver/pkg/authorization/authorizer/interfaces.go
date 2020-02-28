@@ -61,6 +61,9 @@ type Attributes interface {
 
 	// GetPath returns the path of the request
 	GetPath() string
+
+	// GetTenant returns the tenant of the requested resource
+	GetTenant() string
 }
 
 // Authorizer makes an authorization decision based on information gained by making

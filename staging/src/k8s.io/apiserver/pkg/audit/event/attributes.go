@@ -32,6 +32,7 @@ var _ authorizer.Attributes = &attributes{}
 type attributes struct {
 	event *audit.Event
 	path  string
+	Tenant string
 }
 
 // NewAttributes returns a new attributes struct and parsed request uri
@@ -125,14 +126,19 @@ func (a *attributes) GetPath() string {
 	return a.path
 }
 
+
+// GetPath returns the path uri accessed
+func (a *attributes) GetTenant() string {
+	return a.Tenant
+}
 // user represents the event user
 type user audit.UserInfo
 
 // GetName returns the user name
-func (u user) GetName() string { return u.Username }
+func (u user) GetTenant() string { return u.Tenant }
 
 // GetName returns the user name
-func (u user) GetTenant() string { return u.Tenant}
+func (u user) GetName() string { return u.Username }
 
 // GetUID returns the user uid
 func (u user) GetUID() string { return u.UID }

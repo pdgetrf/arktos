@@ -82,7 +82,6 @@ func GetAuthorizerAttributes(ctx context.Context) (authorizer.Attributes, error)
 
 	user, ok := request.UserFrom(ctx)
 	if ok {
-		klog.Infof("===== xyz %+v", user.GetTenant());
 		attribs.User = user
 	}
 

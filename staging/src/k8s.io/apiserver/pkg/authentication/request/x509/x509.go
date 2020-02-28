@@ -191,6 +191,11 @@ var CommonNameUserConversion = UserConversionFunc(func(chain []*x509.Certificate
 		return nil, false, nil
 	}
 
+	// one tenant per user
+	if (len(chain[0].Subject.Organization)>1) {
+		return nil, false, nil
+	}
+
 	if (len(chain[0].Subject.Organization)>0) {
 		return &authenticator.Response{
 			User: &user.DefaultInfo{
