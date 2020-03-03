@@ -24,6 +24,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"k8s.io/klog"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -327,6 +328,7 @@ func (s *Plugin) getServiceAccount(tenant string, namespace string, name string)
 // getReferencedServiceAccountToken returns the name of the first referenced secret which is a ServiceAccountToken for the service account
 func (s *Plugin) getReferencedServiceAccountToken(serviceAccount *corev1.ServiceAccount) (string, error) {
 	if len(serviceAccount.Secrets) == 0 {
+		klog.Infof("========== 999 %+v", serviceAccount)
 		return "", nil
 	}
 

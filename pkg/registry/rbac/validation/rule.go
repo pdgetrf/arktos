@@ -184,7 +184,7 @@ func (r *DefaultRuleResolver) VisitRulesFor(user user.Info, namespace string, vi
 		if !visitor(nil, nil, err) {
 			return
 		}
-	} else if userTenant == "" {
+	} else if userTenant == "system" {
 		sourceDescriber := &clusterRoleBindingDescriber{}
 		for _, clusterRoleBinding := range clusterRoleBindings {
 
