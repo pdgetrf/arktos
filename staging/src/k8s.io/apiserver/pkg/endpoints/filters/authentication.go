@@ -59,6 +59,7 @@ func WithAuthentication(handler http.Handler, auth authenticator.Request, failed
 		if len(apiAuds) > 0 {
 			req = req.WithContext(authenticator.WithAudiences(req.Context(), apiAuds))
 		}
+		klog.Infof("======abc1")
 		resp, ok, err := auth.AuthenticateRequest(req)
 		if err != nil || !ok {
 			if err != nil {
@@ -67,6 +68,7 @@ func WithAuthentication(handler http.Handler, auth authenticator.Request, failed
 			failed.ServeHTTP(w, req)
 			return
 		}
+		klog.Infof("======abc2 %+v, %+v", req, resp.User)
 
 		// TODO(mikedanese): verify the response audience matches one of apiAuds if
 		// non-empty

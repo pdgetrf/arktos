@@ -20,6 +20,7 @@ import (
 	"errors"
 	"net/http"
 	"strings"
+	"k8s.io/klog"
 
 	"k8s.io/apiserver/pkg/authentication/authenticator"
 )
@@ -51,6 +52,7 @@ func (a *Authenticator) AuthenticateRequest(req *http.Request) (*authenticator.R
 		return nil, false, nil
 	}
 
+	klog.Infof("====== 130 %+v", req.Context())
 	resp, ok, err := a.auth.AuthenticateToken(req.Context(), token)
 	// if we authenticated successfully, go ahead and remove the bearer token so that no one
 	// is ever tempted to use it inside of the API server
