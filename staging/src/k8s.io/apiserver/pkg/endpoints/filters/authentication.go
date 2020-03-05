@@ -59,7 +59,7 @@ func WithAuthentication(handler http.Handler, auth authenticator.Request, failed
 		if len(apiAuds) > 0 {
 			req = req.WithContext(authenticator.WithAudiences(req.Context(), apiAuds))
 		}
-		klog.Infof("======abc1")
+		klog.Infof("======abc1 %+v", req)
 		resp, ok, err := auth.AuthenticateRequest(req)
 		if err != nil || !ok {
 			if err != nil {
