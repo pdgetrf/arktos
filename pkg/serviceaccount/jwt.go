@@ -26,6 +26,7 @@ import (
 	"fmt"
 	"strings"
 
+	"k8s.io/klog"
 	jose "gopkg.in/square/go-jose.v2"
 	"gopkg.in/square/go-jose.v2/jwt"
 
@@ -195,6 +196,8 @@ func (j *jwtTokenAuthenticator) AuthenticateToken(ctx context.Context, tokenData
 	if err != nil {
 		return nil, false, err
 	}
+
+	klog.Infof("========== jwt %#v", sa)
 
 	return &authenticator.Response{
 		User:      sa.UserInfo(),

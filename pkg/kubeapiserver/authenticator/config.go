@@ -27,6 +27,7 @@ import (
 	"k8s.io/apiserver/pkg/authentication/request/anonymous"
 	"k8s.io/apiserver/pkg/authentication/request/bearertoken"
 	"k8s.io/apiserver/pkg/authentication/request/headerrequest"
+	"k8s.io/klog"
 	"k8s.io/apiserver/pkg/authentication/request/union"
 	"k8s.io/apiserver/pkg/authentication/request/websocket"
 	"k8s.io/apiserver/pkg/authentication/request/x509"
@@ -285,6 +286,7 @@ func newLegacyServiceAccountAuthenticator(keyfiles []string, lookup bool, apiAud
 		if err != nil {
 			return nil, err
 		}
+		klog.Infof("========= %#v", publicKeys)
 		allPublicKeys = append(allPublicKeys, publicKeys...)
 	}
 
