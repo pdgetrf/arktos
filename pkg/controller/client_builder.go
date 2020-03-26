@@ -109,6 +109,7 @@ type SAControllerClientBuilder struct {
 // config returns a complete clientConfig for constructing clients.  This is separate in anticipation of composition
 // which means that not all clientsets are known here
 func (b SAControllerClientBuilder) Config(name string) (*restclient.Config, error) {
+	klog.Infof("====== %v", name)
 	sa, err := getOrCreateServiceAccount(b.CoreClient, b.Namespace, name)
 	if err != nil {
 		return nil, err
