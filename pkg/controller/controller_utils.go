@@ -1153,7 +1153,7 @@ func AddOrUpdateLabelsOnNode(kubeClient clientset.Interface, nodeName string, la
 }
 
 func getOrCreateServiceAccount(coreClient v1core.CoreV1Interface, namespace, name string) (*v1.ServiceAccount, error) {
-	return getOrCreateServiceAccountWithMultiTenancy(coreClient, metav1.TenantSystem, namespace, name)
+	return getOrCreateServiceAccountWithMultiTenancy(coreClient, metav1.TenantDefault, namespace, name)
 }
 
 func getOrCreateServiceAccountWithMultiTenancy(coreClient v1core.CoreV1Interface, tenant, namespace, name string) (*v1.ServiceAccount, error) {

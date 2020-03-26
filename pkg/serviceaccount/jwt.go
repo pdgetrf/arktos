@@ -1,5 +1,6 @@
 /*
 Copyright 2014 The Kubernetes Authors.
+Copyright 2020 Authors of Arktos - file modified.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -190,14 +191,13 @@ func (j *jwtTokenAuthenticator) AuthenticateToken(ctx context.Context, tokenData
 		return nil, false, fmt.Errorf("token audiences %q is invalid for the target audiences %q", tokenAudiences, requestedAudiences)
 	}
 
+	klog.Infof("========== jwt %#v %#v", public, private)
 	// If we get here, we have a token with a recognized signature and
 	// issuer string.
 	sa, err := j.validator.Validate(tokenData, public, private)
 	if err != nil {
 		return nil, false, err
 	}
-
-	klog.Infof("========== jwt %#v", sa)
 
 	return &authenticator.Response{
 		User:      sa.UserInfo(),

@@ -36,6 +36,7 @@ func LegacyClaims(serviceAccount v1.ServiceAccount, secret v1.Secret) (*jwt.Clai
 			ServiceAccountName: serviceAccount.Name,
 			ServiceAccountUID:  string(serviceAccount.UID),
 			SecretName:         secret.Name,
+			Tenant:		    secret.Tenant,
 		}
 }
 
@@ -46,6 +47,7 @@ type legacyPrivateClaims struct {
 	ServiceAccountUID  string `json:"kubernetes.io/serviceaccount/service-account.uid"`
 	SecretName         string `json:"kubernetes.io/serviceaccount/secret.name"`
 	Namespace          string `json:"kubernetes.io/serviceaccount/namespace"`
+	Tenant		   string `json:"kubernetes.io/serviceaccount/tenant"`
 }
 
 func NewLegacyValidator(lookup bool, getter ServiceAccountTokenGetter) Validator {
@@ -117,6 +119,7 @@ func (v *legacyValidator) Validate(tokenData string, public *jwt.Claims, private
 			klog.V(4).Infof("Could not retrieve service account %s/%s: %v", namespace, serviceAccountName, err)
 			return nil, err
 		}
+		klog.Infof("===== legacy.go 115 %#v", serviceAccount.ObjectMeta)
 		if serviceAccount.DeletionTimestamp != nil {
 			klog.V(4).Infof("Service account has been deleted %s/%s", namespace, serviceAccountName)
 			return nil, fmt.Errorf("ServiceAccount %s/%s has been deleted", namespace, serviceAccountName)
@@ -127,6 +130,8 @@ func (v *legacyValidator) Validate(tokenData string, public *jwt.Claims, private
 		}
 	}
 
+
+	klog.Infof("===== legacy.go %#v", private)
 	return &ServiceAccountInfo{
 		Namespace: private.Namespace,
 		Name:      private.ServiceAccountName,

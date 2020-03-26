@@ -43,7 +43,7 @@ func UserInfo(namespace, name, uid string) user.Info {
 
 type ServiceAccountInfo struct {
 	Name, Namespace, UID string
-	PodName, PodUID      string
+	PodName, PodUID, Tenant string
 }
 
 func (sa *ServiceAccountInfo) UserInfo() user.Info {
