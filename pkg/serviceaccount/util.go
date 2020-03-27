@@ -33,11 +33,12 @@ const (
 )
 
 // UserInfo returns a user.Info interface for the given namespace, service account name and UID
-func UserInfo(namespace, name, uid string) user.Info {
+func UserInfo(namespace, name, uid, tenant string) user.Info {
 	return (&ServiceAccountInfo{
 		Name:      name,
 		Namespace: namespace,
 		UID:       uid,
+		Tenant:    tenant,
 	}).UserInfo()
 }
 
@@ -51,7 +52,7 @@ func (sa *ServiceAccountInfo) UserInfo() user.Info {
 		Name:   apiserverserviceaccount.MakeUsername(sa.Namespace, sa.Name),
 		UID:    sa.UID,
 		Groups: apiserverserviceaccount.MakeGroupNames(sa.Namespace),
-		Tenant: "system",
+		Tenant: sa.Tenant,
 	}
 	if sa.PodName != "" && sa.PodUID != "" {
 		info.Extra = map[string][]string{

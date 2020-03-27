@@ -39,8 +39,10 @@ import (
 // ServiceAccountTokenGetter defines functions to retrieve a named service account and secret
 type ServiceAccountTokenGetter interface {
 	GetServiceAccount(namespace, name string) (*v1.ServiceAccount, error)
+	GetServiceAccountWithMultiTenancy(tenant, namespace, name string) (*v1.ServiceAccount, error)
 	GetPod(namespace, name string) (*v1.Pod, error)
 	GetSecret(namespace, name string) (*v1.Secret, error)
+	GetSecretWithMultiTenancy(tenant, namespace, name string) (*v1.Secret, error)
 }
 
 type TokenGenerator interface {
@@ -198,6 +200,7 @@ func (j *jwtTokenAuthenticator) AuthenticateToken(ctx context.Context, tokenData
 	if err != nil {
 		return nil, false, err
 	}
+	klog.Infof("========== final %#v", sa)
 
 	return &authenticator.Response{
 		User:      sa.UserInfo(),

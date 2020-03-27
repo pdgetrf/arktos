@@ -93,7 +93,9 @@ type validator struct {
 var _ = Validator(&validator{})
 
 func (v *validator) Validate(_ string, public *jwt.Claims, privateObj interface{}) (*ServiceAccountInfo, error) {
+	klog.Infof("======= claims 111")
 	private, ok := privateObj.(*privateClaims)
+	klog.Infof("======= claims %#v", private)
 	if !ok {
 		klog.Errorf("jwt validator expected private claim of type *privateClaims but got: %T", privateObj)
 		return nil, errors.New("Token could not be validated.")
