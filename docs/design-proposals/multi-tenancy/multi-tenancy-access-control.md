@@ -18,27 +18,50 @@ The key changes to each authenticator is that it needs to retrieve the tenant in
 
 The existing X509 certificate authenticator reads "/CN" and "/O" from cert subject, and map them to user name and groups respectively. 
 
-To make the authenticator tenancy-aware, "/O" will be mapped to tenant while "/OU" (Organization Unit) will be mapped to groups. 
-
-Below is a sample cert:
+Below is a sample certificate request with the new format:
 
 ```text
-openssl req -new -key demo.pem -out demo-csr.pem -subj "/CN=demo/O=tenant1/OU=app1/OU=app2"
+openssl req -new -key demo.pem -out demo-csr.pem -subj "/CN=user/O=app1/O=app2"
 ```
 
-The certificate authenticator will map it to the following user:
-* The user name is "demo".
-* The user belongs to tenant "tenant1".
-* The user has a membership of group "app1" and "app1".
+To make the authenticator tenancy-aware, "/O" will be changed to map to tenant while "/OU" (Organization Unit) to map to groups. To maintain backward compatibility, two formats are to be used. If "tenant:" is at the beginning of "/O", then what's after the it will be treated as tenant. For example, with "/O=tenant:tenantA/OU=app1/OU=app2", tenant will be set as "tenantA", and groups will have ["app1", "app2"]. If "tenant:" is not found at the beginning of "/O", the string before the first ":" in /CN will be used as tenant. For example, with "/CN=tenantB:demo/O=app1/O=app2", tenant will be set to "tenantB".
 
-### 2.Token Authenticator
-(**TBD**)
+### 2.Token File Authenticator
+With --token-auth-file=/path/to/tokenfile, token is read from tokenfile with the following format:
 
-### 3.Basic Authenticator
-(**TBD**)
+```text
+[token],[user],[uid],[groups...],[other data]
+```
+
+Token file is prepared by system admin and supplied to cluster at start-up time. To support multi-tenancy, this format is changed to:
+
+```text
+[token],[user],[uid],[groups...],[other data],,[tenant]
+```
+
+The empty ",," at the end indicates a tenant name is to follow.  This new format provides backward compatibility. If no such field of arrangement exists, it will be identified as the old format and thus tenant is defaulted to "system".
+
+### 3.Basic Auth File Authenticator
+With--basic-auth-file=/path/to/somefile, token is read from tokenfile with the following format:
+
+```text
+[password],[user],[uid],[groups...],[other data]
+```
+
+Password file is prepared by system admin and supplied to cluster at start-up time. To support multi-tenancy, this format is changed to:
+
+```text
+[password],[user],[uid],[groups...],[other data],,[tenant]
+```
+
+The empty ",," at the end indicates a tenant name is to follow.  This new format provides backward compatibility. If no such field of arrangement exists, it will be identified as the old format and thus tenant is defaulted to "system".
 
 ### 4.Service Account Authenticator
-(**TBD**)
+Service account can use JSON Web Token (JWT) as  a bearer token to authenticate with apiserver.  Both service account and sercret will be changed to tenant-scope. The tenant name is to be added to the bearer token so that it can be retrieved and verified during authentication.
+
+### 5.Webhook Authenticator
+
+
 
 ## Authorization
 
@@ -142,7 +165,7 @@ As we discussed earlier, it is better not to introduce a new resource type of Te
 I am considering to downgrade the scope of ClusterRole from cluster-scope to tenant-scope. So that each tenant can define their own ClusterRoles without worrying name collision. (In this sense, we may need to rename ClusterRole to something like WideRangeRole or GeneralRole ). 
 
 A concern we have that is how to differ the system-tenant rules which applies to all the tenants from the rules that apply to the system-tenant itself only. 
-  
+
 I found that there is a field of “ScopeType” in the type of Rule.I found this field was defined but not actively used in K8s. (I search ScopeType in k8s repo and found no appearance other than the Rule type definition).
 
 So each regular user can define two type of roles, ClusterRole and Role, which operates on a tenant scope and a namespace scope. “ScopeType” field in the rule will simply be ignored.
