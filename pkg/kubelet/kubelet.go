@@ -29,6 +29,7 @@ import (
 	"os"
 	"path"
 	"sort"
+	"strconv"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -312,13 +313,23 @@ func makePodSourceConfig(kubeCfg *kubeletconfiginternal.KubeletConfiguration, ku
 		}
 	}
 
+	if updatechannel == nil {
+		for i, client := range kubeDeps.KubeTPClients {
+			source := kubetypes.ApiserverSource + strconv.Itoa(i)
+			klog.Infof("Watching apiserver %s", source)
+			uc := cfg.Channel(source)
+			config.NewSourceApiserver(client, nodeName, uc)
+		}
+	}
+
 	if kubeDeps.KubeClient != nil {
-		klog.Infof("Watching apiserver")
+		klog.Info("Watching apiserver")
 		if updatechannel == nil {
 			updatechannel = cfg.Channel(kubetypes.ApiserverSource)
 		}
 		config.NewSourceApiserver(kubeDeps.KubeClient, nodeName, updatechannel)
 	}
+
 	return cfg, nil
 }
 
@@ -490,6 +501,7 @@ func NewMainKubelet(kubeCfg *kubeletconfiginternal.KubeletConfiguration,
 		hostnameOverridden:                      len(hostnameOverride) > 0,
 		nodeName:                                nodeName,
 		kubeClient:                              kubeDeps.KubeClient,
+		kubeTPClients:                           kubeDeps.KubeTPClients,
 		heartbeatClient:                         kubeDeps.HeartbeatClient,
 		onRepeatedHeartbeatFailure:              kubeDeps.OnHeartbeatFailure,
 		rootDirectory:                           rootDirectory,
@@ -589,7 +601,7 @@ func NewMainKubelet(kubeCfg *kubeletconfiginternal.KubeletConfiguration,
 	// podManager is also responsible for keeping secretManager and configMapManager contents up-to-date.
 	klet.podManager = kubepod.NewBasicPodManager(kubepod.NewBasicMirrorClient(klet.kubeClient), secretManager, configMapManager, checkpointManager)
 
-	klet.statusManager = status.NewManager(klet.kubeClient, klet.podManager, klet)
+	klet.statusManager = status.NewManager(klet.kubeTPClients, klet.podManager, klet)
 
 	if remoteRuntimeEndpoint != "" {
 		// remoteImageEndpoint is same as remoteRuntimeEndpoint if not explicitly specified
@@ -905,7 +917,8 @@ type Kubelet struct {
 
 	nodeName        types.NodeName
 	runtimeCache    kubecontainer.RuntimeCache
-	kubeClient      clientset.Interface
+	kubeClient      clientset.Interface // TO DO: to be removed
+	kubeTPClients   []clientset.Interface
 	heartbeatClient clientset.Interface
 	iptClient       utilipt.Interface
 	rootDirectory   string

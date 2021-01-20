@@ -20,6 +20,8 @@ package kubelet
 import (
 	"fmt"
 	"io/ioutil"
+	clientset "k8s.io/client-go/kubernetes"
+	"k8s.io/kubernetes/pkg/kubelet/kubeclientmanager"
 	"k8s.io/kubernetes/pkg/kubelet/runtimeregistry"
 	"net"
 	"os"
@@ -180,6 +182,9 @@ func newTestKubeletWithImageList(
 	kubelet.runtimeManager = fakeRuntimeManager
 	kubelet.recorder = fakeRecorder
 	kubelet.kubeClient = fakeKubeClient
+	kubelet.kubeTPClients = []clientset.Interface{
+		fakeKubeClient,
+	}
 	kubelet.heartbeatClient = fakeKubeClient
 	kubelet.os = &containertest.FakeOS{}
 	kubelet.mounter = &mount.FakeMounter{}
@@ -241,7 +246,15 @@ func newTestKubeletWithImageList(
 	configMapManager := configmap.NewSimpleConfigMapManager(kubelet.kubeClient)
 	kubelet.configMapManager = configMapManager
 	kubelet.podManager = kubepod.NewBasicPodManager(fakeMirrorClient, kubelet.secretManager, kubelet.configMapManager, podtest.NewMockCheckpointManager())
-	kubelet.statusManager = status.NewManager(fakeKubeClient, kubelet.podManager, &statustest.FakePodDeletionSafetyProvider{})
+	kubelet.statusManager = status.NewManager(kubelet.kubeTPClients, kubelet.podManager, &statustest.FakePodDeletionSafetyProvider{})
+
+	kubeclientmanager.NewKubeClientManager()
+	kubeclientmanager.ClientManager.RegisterTenantSourceServer(
+		"api",
+		&v1.Pod{
+			ObjectMeta: metav1.ObjectMeta{
+				Tenant: "system",
+			}})
 
 	kubelet.containerRuntime = fakeRuntime
 	kubelet.runtimeCache = containertest.NewFakeRuntimeCache(kubelet.containerRuntime)
@@ -346,7 +359,7 @@ func newTestKubeletWithImageList(
 		kubelet.getPodsDir(),
 		kubelet.recorder,
 		false, /* experimentalCheckNodeCapabilitiesBeforeMount*/
-		false /* keepTerminatedPodVolumes */)
+		false  /* keepTerminatedPodVolumes */)
 
 	kubelet.pluginManager = pluginmanager.NewPluginManager(
 		kubelet.getPluginsRegistrationDir(), /* sockDir */

@@ -19,13 +19,13 @@ package types
 
 import (
 	"fmt"
-
 	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	utilfeature "k8s.io/apiserver/pkg/util/feature"
 	kubeapi "k8s.io/kubernetes/pkg/apis/core"
 	"k8s.io/kubernetes/pkg/apis/scheduling"
 	"k8s.io/kubernetes/pkg/features"
+	"strings"
 )
 
 const (
@@ -212,5 +212,5 @@ func IsCriticalPodBasedOnPriority(priority int32) bool {
 // IsStaticPod returns true if the pod is a static pod.
 func IsStaticPod(pod *v1.Pod) bool {
 	source, err := GetPodSource(pod)
-	return err == nil && source != ApiserverSource
+	return err == nil && !strings.HasPrefix(source, ApiserverSource)
 }
