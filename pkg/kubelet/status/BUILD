@@ -16,6 +16,7 @@ go_library(
     deps = [
         "//pkg/api/v1/pod:go_default_library",
         "//pkg/kubelet/container:go_default_library",
+        "//pkg/kubelet/kubeclientmanager:go_default_library",
         "//pkg/kubelet/pod:go_default_library",
         "//pkg/kubelet/types:go_default_library",
         "//pkg/kubelet/util/format:go_default_library",
