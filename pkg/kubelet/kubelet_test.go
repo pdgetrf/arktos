@@ -241,9 +241,9 @@ func newTestKubeletWithImageList(
 	kubelet.machineInfo = machineInfo
 
 	fakeMirrorClient := podtest.NewFakeMirrorClient()
-	secretManager := secret.NewSimpleSecretManager(kubelet.kubeClient)
+	secretManager := secret.NewSimpleSecretManager(kubelet.kubeTPClients)
 	kubelet.secretManager = secretManager
-	configMapManager := configmap.NewSimpleConfigMapManager(kubelet.kubeClient)
+	configMapManager := configmap.NewSimpleConfigMapManager(kubelet.kubeTPClients)
 	kubelet.configMapManager = configMapManager
 	kubelet.podManager = kubepod.NewBasicPodManager(fakeMirrorClient, kubelet.secretManager, kubelet.configMapManager, podtest.NewMockCheckpointManager())
 	kubelet.statusManager = status.NewManager(kubelet.kubeTPClients, kubelet.podManager, &statustest.FakePodDeletionSafetyProvider{})

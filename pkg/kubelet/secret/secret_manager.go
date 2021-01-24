@@ -19,6 +19,7 @@ package secret
 
 import (
 	"fmt"
+	"k8s.io/kubernetes/pkg/kubelet/kubeclientmanager"
 	"time"
 
 	"k8s.io/api/core/v1"
@@ -53,16 +54,17 @@ type Manager interface {
 // simpleSecretManager implements SecretManager interfaces with
 // simple operations to apiserver.
 type simpleSecretManager struct {
-	kubeClient clientset.Interface
+	kubeClients []clientset.Interface
 }
 
 // NewSimpleSecretManager creates a new SecretManager instance.
-func NewSimpleSecretManager(kubeClient clientset.Interface) Manager {
-	return &simpleSecretManager{kubeClient: kubeClient}
+func NewSimpleSecretManager(kubeClients []clientset.Interface) Manager {
+	return &simpleSecretManager{kubeClients: kubeClients}
 }
 
 func (s *simpleSecretManager) GetSecret(tenant, namespace, name string) (*v1.Secret, error) {
-	return s.kubeClient.CoreV1().SecretsWithMultiTenancy(namespace, tenant).Get(name, metav1.GetOptions{})
+	kubeClient := kubeclientmanager.ClientManager.GetTPClient(s.kubeClients, tenant)
+	return kubeClient.CoreV1().SecretsWithMultiTenancy(namespace, tenant).Get(name, metav1.GetOptions{})
 }
 
 func (s *simpleSecretManager) RegisterPod(pod *v1.Pod) {
@@ -119,8 +121,9 @@ const (
 // - every GetObject() call tries to fetch the value from local cache; if it is
 //   not there, invalidated or too old, we fetch it from apiserver and refresh the
 //   value in cache; otherwise it is just fetched from cache
-func NewCachingSecretManager(kubeClient clientset.Interface, getTTL manager.GetObjectTTLFunc) Manager {
+func NewCachingSecretManager(kubeClients []clientset.Interface, getTTL manager.GetObjectTTLFunc) Manager {
 	getSecret := func(tenant, namespace, name string, opts metav1.GetOptions) (runtime.Object, error) {
+		kubeClient := kubeclientmanager.ClientManager.GetTPClient(kubeClients, tenant)
 		return kubeClient.CoreV1().SecretsWithMultiTenancy(namespace, tenant).Get(name, opts)
 	}
 	secretStore := manager.NewObjectStore(getSecret, clock.RealClock{}, getTTL, defaultTTL)
@@ -135,11 +138,13 @@ func NewCachingSecretManager(kubeClient clientset.Interface, getTTL manager.GetO
 // - whenever a pod is created or updated, we start individual watches for all
 //   referenced objects that aren't referenced from other registered pods
 // - every GetObject() returns a value from local cache propagated via watches
-func NewWatchingSecretManager(kubeClient clientset.Interface) Manager {
+func NewWatchingSecretManager(kubeClients []clientset.Interface) Manager {
 	listSecret := func(tenant, namespace string, opts metav1.ListOptions) (runtime.Object, error) {
+		kubeClient := kubeclientmanager.ClientManager.GetTPClient(kubeClients, tenant)
 		return kubeClient.CoreV1().SecretsWithMultiTenancy(namespace, tenant).List(opts)
 	}
 	watchSecret := func(tenant, namespace string, opts metav1.ListOptions) (watch.Interface, error) {
+		kubeClient := kubeclientmanager.ClientManager.GetTPClient(kubeClients, tenant)
 		return kubeClient.CoreV1().SecretsWithMultiTenancy(namespace, tenant).Watch(opts)
 	}
 	newSecret := func() runtime.Object {
