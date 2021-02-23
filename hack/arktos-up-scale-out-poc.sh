@@ -492,6 +492,9 @@ if [[ "${ENABLE_DAEMON}" = false ]]; then
 fi
 
 echo "Starting services now!"
+
+kube::common::set_master_endpoint
+
 if [[ "${START_MODE}" != "kubeletonly" ]]; then
   start_etcd
   kube::common::set_service_accounts
@@ -507,8 +510,6 @@ if [[ "${START_MODE}" != "kubeletonly" ]]; then
   #cluster/kubectl.sh create -f hack/runtime/workload-controller-manager-clusterrole.yaml
 
   #cluster/kubectl.sh create -f hack/runtime/workload-controller-manager-clusterrolebinding.yaml
-
-  kube::common::set_master_endpoint
 
   kube::common::start_controller_manager
   #kube::common::start_workload_controller_manager
