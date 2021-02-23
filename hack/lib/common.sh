@@ -511,6 +511,8 @@ function kube::common::start_controller_manager {
 }
 
 function kube::common::set_master_endpoint {
+    IS_RESOURCE_PARTITION=${IS_RESOURCE_PARTITION:-}
+
     if [[ -z "${IS_RESOURCE_PARTITION}" ]]; then
        MASTER_ENDPOINT="https://${API_HOST}:${API_SECURE_PORT}"
     else
