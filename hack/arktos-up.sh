@@ -14,6 +14,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# unset env variables used by scale-out setup
+unset SCALE_OUT_PROXY_ENDPOINT
+unset TENANT_PARTITION_IP
+unset RESOURCE_PARTITION_IP
+unset IS_RESOURCE_PARTITION
+unset TENANT_SERVERS
+
 KUBE_ROOT=$(dirname "${BASH_SOURCE[0]}")/..
 
 source "${KUBE_ROOT}/hack/lib/common-var-init.sh"
@@ -482,6 +489,7 @@ if [[ "${START_MODE}" != "kubeletonly" ]]; then
 
   #cluster/kubectl.sh create -f hack/runtime/workload-controller-manager-clusterrolebinding.yaml
 
+  kube::common::set_master_endpoint
   kube::common::start_controller_manager
 #  kube::common::start_workload_controller_manager
   if [[ "${EXTERNAL_CLOUD_PROVIDER:-}" == "true" ]]; then

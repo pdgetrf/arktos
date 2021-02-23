@@ -31,10 +31,6 @@ echo ${KUBELET_FLAGS}
 
 KUBE_ROOT=$(dirname "${BASH_SOURCE[0]}")/..
 
-if [[ -z "${TENANT_SERVERS}" ]]; then
-  TENANT_SERVERS=${SCALE_OUT_PROXY_ENDPOINT}
-fi
-
 # for POC, the kubelet_flags is used for the new temporary kubelet commandline args
 KUBELET_FLAGS="--tenant-servers="${TENANT_SERVERS}
 # --tenant-servers set the tenant server urls for node-lifecycle controller
@@ -511,6 +507,8 @@ if [[ "${START_MODE}" != "kubeletonly" ]]; then
   #cluster/kubectl.sh create -f hack/runtime/workload-controller-manager-clusterrole.yaml
 
   #cluster/kubectl.sh create -f hack/runtime/workload-controller-manager-clusterrolebinding.yaml
+
+  kube::common::set_master_endpoint
 
   kube::common::start_controller_manager
   #kube::common::start_workload_controller_manager

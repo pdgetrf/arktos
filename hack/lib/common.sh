@@ -476,10 +476,8 @@ function kube::common::start_controller_manager {
     fi
 
     if [[ -z "${IS_RESOURCE_PARTITION}" ]]; then
-       MASTER_ENDPOINT="https://${API_HOST}:${API_SECURE_PORT}"
        SERVICE_ACCOUNT_FLAG="--use-service-account-credentials"
     else
-       MASTER_ENDPOINT=${SCALE_OUT_PROXY_ENDPOINT}
        if [ "${IS_RESOURCE_PARTITION}" == "true" ]; then
           KUBE_CONTROLLERS="nodelifecycle"
        else
@@ -512,17 +510,19 @@ function kube::common::start_controller_manager {
     CTLRMGR_PID=$!
 }
 
+function kube::common::set_master_endpoint {
+    if [[ -z "${IS_RESOURCE_PARTITION}" ]]; then
+       MASTER_ENDPOINT="https://${API_HOST}:${API_SECURE_PORT}"
+    else
+       MASTER_ENDPOINT=${SCALE_OUT_PROXY_ENDPOINT}
+    fi
+}
+
 function kube::common::start_kubescheduler {
     CONTROLPLANE_SUDO=$(test -w "${CERT_DIR}" || echo "sudo -E")
     kubeconfigfilepaths="${CERT_DIR}/scheduler.kubeconfig"
     if [[ $# -gt 1 ]] ; then
        kubeconfigfilepaths=$@
-    fi
-  
-    if [[ -z "${IS_RESOURCE_PARTITION}" ]]; then
-       MASTER_ENDPOINT="https://${API_HOST}:${API_SECURE_PORT}"
-    else
-       MASTER_ENDPOINT=${SCALE_OUT_PROXY_ENDPOINT}
     fi
 
     SCHEDULER_LOG=${LOG_DIR}/kube-scheduler.log
@@ -673,12 +673,6 @@ EOF
 
     kube::common::generate_kubeproxy_certs
     
-    if [[ -z "${IS_RESOURCE_PARTITION}" ]]; then
-       MASTER_ENDPOINT="https://${API_HOST}:${API_SECURE_PORT}"
-    else
-       MASTER_ENDPOINT=${SCALE_OUT_PROXY_ENDPOINT}
-    fi
-
     # shellcheck disable=SC2024
     sudo "${GO_OUT}/hyperkube" kube-proxy \
       --v="${LOG_LEVEL}" \
